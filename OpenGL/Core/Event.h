@@ -15,7 +15,7 @@ namespace GL {
 
 #define BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 
-#define EVENT_TYPE(type) static EventType GetStaticType() { return EventType::##type; } \
+#define EVENT_TYPE(type) static EventType GetStaticType() { return EventType::##type; }; \
 						EventType GetEventType() const override { return GetStaticType(); };
 
 

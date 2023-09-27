@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../GLCommon.h"
-#include "../Events/Event.h"
+#include "Event.h"
 
 
 namespace GL {

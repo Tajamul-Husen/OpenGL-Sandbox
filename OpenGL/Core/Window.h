@@ -4,7 +4,7 @@
 #include <glfw/glfw3.h>
 
 #include "../GLCommon.h"
-#include "../Events/Event.h"
+#include "Event.h"
 #include "../Debug/Log.h"
 #include "../Debug/Assert.h"
 
