@@ -31,8 +31,11 @@ namespace GL {
 
 		for (const auto& shaderKV : m_Shaders)
 		{
+			const std::string& shaderSource = ReadFile(shaderKV.second);
+
 			unsigned int shader = glCreateShader(shaderKV.first);
-			const char* src = shaderKV.second.c_str();
+
+			const char* src = shaderSource.c_str();
 
 			glShaderSource(shader, 1, &src, nullptr);
 
@@ -49,7 +52,7 @@ namespace GL {
 				char* message = (char*)_malloca(length * sizeof(char)); // create char on stack
 				glGetShaderInfoLog(shader, length, &length, message);
 
-
+				GL_LOG_INFO("Shader Type: {0}", GetShaderFromType(shaderKV.first));
 				GL_LOG_ERROR("Failed to compile shader: {0}", message);
 
 				glDeleteShader(shader);

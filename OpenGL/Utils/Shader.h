@@ -13,6 +13,17 @@ namespace GL {
 	};
 
 
+	static std::string GetShaderFromType(ShaderType type)
+	{
+		switch (type)
+		{
+		case ShaderType::VERTEX_SHADER: return "Vertex";
+		case ShaderType::FRAGMENT_SHADER: return "Fragment";
+		case ShaderType::GEOMETRY_SHADER: return "Geometry";
+		}
+	}
+
+
 	class Shader
 	{
 	public:
@@ -23,7 +34,7 @@ namespace GL {
 		void Add(ShaderType type, const std::string& filePath);
 		void Compile();
 
-		unsigned int GetID() { return m_ProgramID; };
+		unsigned int GetProgramID() { return m_ProgramID; };
 
 	private:
 		std::string ReadFile(const std::string& filePath);
