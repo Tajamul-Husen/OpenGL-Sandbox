@@ -6,11 +6,11 @@
 
 using namespace GL;
 
-class SandboxLayer : public Layer
+class Sandbox2DLayer : public Layer
 {
 public:
-	SandboxLayer(const std::string& name);
-	~SandboxLayer();
+	Sandbox2DLayer(const std::string& name);
+	~Sandbox2DLayer();
 
 	virtual void OnAdd();
 	virtual void OnUpdate(float deltaTime);
@@ -18,7 +18,7 @@ public:
 	virtual void OnRemove();
 
 private:
-	unsigned int m_CubeVA, m_CubeVB, m_CubeIB;
+	unsigned int m_TrigVA, m_TrigVB, m_TrigIB;
 
 	ShaderSystem* m_ShaderSystem = nullptr;
 	CameraSystem* m_CameraSystem = nullptr;
