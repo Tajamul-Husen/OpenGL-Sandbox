@@ -4,25 +4,19 @@
 
 namespace GL {
 
-	Shader::~Shader()
+	ShaderSystem::~ShaderSystem()
 	{
 		glDeleteProgram(m_ProgramID);
 	};
 
 
-	void Shader::Use()
-	{
-		glUseProgram(m_ProgramID);
-	};
-
-
-	void Shader::Add(ShaderType type, const std::string& filePath)
+	void ShaderSystem::Add(ShaderType type, const std::string& filePath)
 	{
 		m_Shaders[type] = filePath;
 	};
 
 
-	void Shader::Compile()
+	bool ShaderSystem::Compile()
 	{
 		unsigned int program = glCreateProgram();
 
@@ -56,6 +50,8 @@ namespace GL {
 				GL_LOG_ERROR("Failed to compile shader: {0}", message);
 
 				glDeleteShader(shader);
+
+				return false;
 			}
 
 			glAttachShader(program, shader);
@@ -81,7 +77,7 @@ namespace GL {
 			for (auto& id : shaderIDs)
 				glDeleteShader(id);
 
-			return;
+			return false;
 		}
 
 		for (auto& id : shaderIDs)
@@ -90,10 +86,12 @@ namespace GL {
 		m_ProgramID = program;
 
 		GL_LOG_INFO("Shader Compile Successfull.");
+
+		return true;
 	};
 
 
-	std::string Shader::ReadFile(const std::string& filePath)
+	std::string ShaderSystem::ReadFile(const std::string& filePath)
 	{
 		std::string result;
 		std::ifstream in(filePath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII

@@ -24,15 +24,14 @@ namespace GL {
 	}
 
 
-	class Shader
+	class ShaderSystem
 	{
 	public:
-		Shader() = default;
-		~Shader();
+		ShaderSystem() = default;
+		~ShaderSystem();
 
-		void Use();
 		void Add(ShaderType type, const std::string& filePath);
-		void Compile();
+		bool Compile();
 
 		unsigned int GetProgramID() { return m_ProgramID; };
 
