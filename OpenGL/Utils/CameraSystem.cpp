@@ -8,7 +8,7 @@ namespace GL
 
 	CameraSystem::CameraSystem(uint16_t width, uint16_t height) : m_ViewportWidth(width), m_ViewportHeight(height)
 	{
-		m_Camera = new Camera(static_cast<float>(width / height));
+		m_Camera = new Camera((float)width / (float)height);
 	};
 
 

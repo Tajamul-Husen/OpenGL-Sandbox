@@ -22,7 +22,7 @@ namespace GL {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); // require for debugging enable in opengl
 
-		m_Window = glfwCreateWindow(m_WindowData.Width, m_WindowData.Height, m_WindowData.Title, NULL, NULL);
+		m_Window = glfwCreateWindow((int)m_WindowData.Width, (int)m_WindowData.Height, m_WindowData.Title, NULL, NULL);
 
 		GL_ASSERT(m_Window != NULL, "Failed to create GLFW window.");
 
