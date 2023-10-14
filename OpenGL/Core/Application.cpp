@@ -10,6 +10,8 @@ namespace GL {
 		for (auto& layer : m_LayerStack)
 			delete layer;
 
+		delete m_Overlay;
+
 		m_LayerStack.clear();
 	};
 
@@ -20,6 +22,8 @@ namespace GL {
 
 		m_Window.Create(WindowConfig(config.Name, config.Width, config.Height));
 		m_Window.SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+
+		m_Overlay->Init(m_Window.Get(), config.GLSLVersion);
 	};
 
 
@@ -43,9 +47,21 @@ namespace GL {
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate(m_DeltaFrameTime);
 
-			// window 
+			// Overlay Rendering
+			m_Overlay->Begin();
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnOverlayRender();
+
+			m_Overlay->End();
+
+			// update
 			m_Window.Update();
 		}
+
+		// Cleanup
+		m_Overlay->Destroy();
+		m_Window.Destroy();
 	};
 
 

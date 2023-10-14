@@ -37,6 +37,9 @@ namespace GL {
 		GL_LOG_INFO("Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
 		GL_LOG_INFO("Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
+		// set mouse input
+		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
 		glfwSwapInterval(1); // For VSYNC
 
 		glfwSetWindowUserPointer(m_Window, &m_WindowData);

@@ -98,7 +98,7 @@ void SandboxLayer::OnAdd()
 	// Vertex Buffer
 	glCreateBuffers(1, &m_CubeVB);
 	glBindBuffer(GL_ARRAY_BUFFER, m_CubeVB);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW); // Arguments - (type, size, data, usage)
 
 	// Index Buffer
 	glCreateBuffers(1, &m_CubeIB);
@@ -148,10 +148,30 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Color");
 	glUniform4fv(location, 1, glm::value_ptr(glm::vec4(1.0f, 0.5f, 0.2f, 1.0f)));
 
-	// ---------------------------------
+	glBindVertexArray(m_CubeVA);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+
+	// -------------------------------------
+
+	model = glm::translate(model, glm::vec3(4.0f, 0.0f, 0.0f));
+
+	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Model");
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(model));
+
+	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Color");
+	glUniform4fv(location, 1, glm::value_ptr(glm::vec4(1.0f, 0.5f, 0.5f, 1.0f)));
 
 	glBindVertexArray(m_CubeVA);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+};
+
+
+void SandboxLayer::OnOverlayRender()
+{
+	ImGui::Begin("Testing Info"); 
+	ImGui::Text("Application (%.1f FPS)", ImGui::GetIO().Framerate);
+	ImGui::Text("Frametime %.3f ms ", 1000.0f / ImGui::GetIO().Framerate);
+	ImGui::End();
 };
 
 

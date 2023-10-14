@@ -13,9 +13,11 @@ public:
 	~SandboxLayer();
 
 	virtual void OnAdd();
+	virtual void OnRemove();
+	virtual void OnOverlayRender();
+
 	virtual void OnUpdate(float deltaTime);
 	virtual void OnEvent(Event& event);
-	virtual void OnRemove();
 
 private:
 	unsigned int m_CubeVA, m_CubeVB, m_CubeIB;
