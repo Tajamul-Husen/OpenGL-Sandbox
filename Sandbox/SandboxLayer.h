@@ -22,10 +22,13 @@ public:
 private:
 	unsigned int m_CubeVA, m_CubeVB, m_CubeIB;
 	unsigned int m_InstancedCubeVB;
-
 	static const unsigned int m_MatricesAmount = 15;
 
-	ShaderSystem* m_ShaderSystem = nullptr;
+	unsigned int m_FloorVA, m_FloorVB;
+
+	ShaderSystem* m_CubeShader = nullptr;
+	ShaderSystem* m_FloorShader = nullptr;
+
 	CameraSystem* m_CameraSystem = nullptr;
 };
 

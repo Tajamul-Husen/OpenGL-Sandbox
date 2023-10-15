@@ -18,13 +18,47 @@ void SandboxLayer::OnAdd()
 	m_CameraSystem->SetPerspectiveProjection();
 	m_CameraSystem->SetCameraPosition(glm::vec3(0.0f, 0.0f, 3.0f));
 
-	m_ShaderSystem = new ShaderSystem();
+	m_CubeShader = new ShaderSystem();
+	m_CubeShader->Add(ShaderType::VERTEX_SHADER, "Sandbox/assets/shaders/instanced.vert.glsl");
+	m_CubeShader->Add(ShaderType::FRAGMENT_SHADER, "Sandbox/assets/shaders/basic.frag.glsl");
 
-	m_ShaderSystem->Add(ShaderType::VERTEX_SHADER, "Sandbox/assets/shaders/test.vert.glsl");
-	m_ShaderSystem->Add(ShaderType::FRAGMENT_SHADER, "Sandbox/assets/shaders/test.frag.glsl");
+	m_FloorShader = new ShaderSystem();
+	m_FloorShader->Add(ShaderType::VERTEX_SHADER, "Sandbox/assets/shaders/basic.vert.glsl");
+	m_FloorShader->Add(ShaderType::FRAGMENT_SHADER, "Sandbox/assets/shaders/basic.frag.glsl");
 
-	bool result = m_ShaderSystem->Compile();
-	GL_ASSERT(result != false, "Shader compilation failed.");
+	bool result = m_CubeShader->Compile();
+	GL_ASSERT(result != false, "Cube Shader compilation failed.");
+
+	result = m_FloorShader->Compile();
+	GL_ASSERT(result != false, "Floor Shader compilation failed.");
+
+	// Floor
+	// =====
+
+	float planeVertices[] = {
+		// positions          
+		 5.0f, -0.5f,  5.0f,
+		-5.0f, -0.5f,  5.0f,
+		-5.0f, -0.5f, -5.0f,
+
+		 5.0f, -0.5f,  5.0f,
+		-5.0f, -0.5f, -5.0f,
+		 5.0f, -0.5f, -5.0f,
+	};
+
+	// Vertex Array Object
+	glCreateVertexArrays(1, &m_FloorVA);
+	glBindVertexArray(m_FloorVA);
+
+	// Vertex Buffer
+	glCreateBuffers(1, &m_FloorVB);
+	glBindBuffer(GL_ARRAY_BUFFER, m_FloorVB);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW); // Arguments - (type, size, data, usage)
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // Arguments - (index, size, type, normalized, stride, offset)
+
+	glBindVertexArray(0);
 
 
 	// 3D Cube
@@ -92,30 +126,33 @@ void SandboxLayer::OnAdd()
 		22, 23, 20
 	};
 
-	// Batch of cubes
+	// Batches of cube
 	glm::mat4 modelMatrices[m_MatricesAmount];
 
-	float offsetX = 4.0f;
-	float offsetZ = 0.0f;
+	float posXStart = 2.0f;
+	float posX = posXStart,
+	float posZ = 0.0f;
+	float offset = 1.0f;
 
 	for (unsigned int i = 0; i < m_MatricesAmount; i++)
 	{
 		glm::mat4 model = glm::mat4(1.0f);
 
-		model = glm::translate(model, glm::vec3(offsetX, 0.0f, offsetZ));
+		model = glm::translate(model, glm::vec3(posX, 0.0f, posZ));
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 
-		offsetX -= 1.5f;
+		posX -= offset;
 
 		if ((i + 1) % 5 == 0) {
-			offsetX = 4.0f;
-			offsetZ -= 1.5f;
+			posX = posXStart;
+			posZ -= offset;
 		}
 
 		modelMatrices[i] = model;
 	}
 
-	// Vertex Array Object
+
+	// Vertex Array
 	glCreateVertexArrays(1, &m_CubeVA);
 	glBindVertexArray(m_CubeVA);
 
@@ -140,31 +177,35 @@ void SandboxLayer::OnAdd()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // Arguments - (index, size, type, normalized, stride, offset)
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_InstancedCubeVB);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 2));
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 3));
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 2));
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 3));
 
-	glVertexAttribDivisor(1, 1);
 	glVertexAttribDivisor(2, 1);
 	glVertexAttribDivisor(3, 1);
 	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
 
-	glBindVertexArray(0);
 };
 
 
 void SandboxLayer::OnRemove()
 {
+	glDeleteVertexArrays(1, &m_FloorVA);
+	glDeleteBuffers(1, &m_FloorVB);
+
 	glDeleteVertexArrays(1, &m_CubeVA);
 	glDeleteBuffers(1, &m_CubeVB);
 	glDeleteBuffers(1, &m_CubeIB);
+	glDeleteBuffers(1, &m_InstancedCubeVB);
 
-	delete m_ShaderSystem;
+	delete m_FloorShader;
+	delete m_CubeShader;
 	delete m_CameraSystem;
 };
 
@@ -176,30 +217,46 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glUseProgram(m_ShaderSystem->GetProgramID());
+	unsigned int program = 0;
+	int location = -1;
 
-	int location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Projection");
+	// Floor
+	program = m_FloorShader->GetProgramID();
+	glUseProgram(program);
+
+	location = glGetUniformLocation(program, "u_Projection");
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_CameraSystem->GetCamera()->GetProjectionMatrix()));
 
-	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_View");
+	location = glGetUniformLocation(program, "u_View");
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_CameraSystem->GetViewMatrix()));
 
-	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Color");
-	glUniform4fv(location, 1, glm::value_ptr(glm::vec4(1.0f, 0.5f, 0.2f, 1.0f)));
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(1.0f, 0.55f, 1.0f));
 
-	//glm::mat4 model = glm::mat4(1.0f);
-	//model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-	//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));		// it's a bit too big for our scene, so scale it down
+	location = glGetUniformLocation(program, "u_Model");
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(model));
 
-	//location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Model");
-	//glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(model));
+	location = glGetUniformLocation(program, "u_Color");
+	glUniform4fv(location, 1, glm::value_ptr(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)));
 
-	//glBindVertexArray(m_CubeVA);
-	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+	glBindVertexArray(m_FloorVA);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	// --------------------------------------------------------------
 
-	// Batch Rendering
+	// Cube (Batch Rendering)
+	program = m_CubeShader->GetProgramID();
+	glUseProgram(program);
+
+	location = glGetUniformLocation(program, "u_Projection");
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_CameraSystem->GetCamera()->GetProjectionMatrix()));
+
+	location = glGetUniformLocation(program, "u_View");
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_CameraSystem->GetViewMatrix()));
+
+	location = glGetUniformLocation(program, "u_Color");
+	glUniform4fv(location, 1, glm::value_ptr(glm::vec4(1.0f, 0.5f, 0.2f, 1.0f)));
+
 	glBindVertexArray(m_CubeVA);
 	glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr, m_MatricesAmount);
 };

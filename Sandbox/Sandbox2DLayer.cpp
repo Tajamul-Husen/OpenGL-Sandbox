@@ -17,8 +17,8 @@ void Sandbox2DLayer::OnAdd()
 
 	m_ShaderSystem = new ShaderSystem();
 
-	m_ShaderSystem->Add(ShaderType::VERTEX_SHADER, "Sandbox/assets/shaders/test2D.vert.glsl");
-	m_ShaderSystem->Add(ShaderType::FRAGMENT_SHADER, "Sandbox/assets/shaders/test2D.frag.glsl");
+	m_ShaderSystem->Add(ShaderType::VERTEX_SHADER, "Sandbox/assets/shaders/instanced.vert.glsl");
+	m_ShaderSystem->Add(ShaderType::FRAGMENT_SHADER, "Sandbox/assets/shaders/basic.frag.glsl");
 
 	m_ShaderSystem->Compile();
 
