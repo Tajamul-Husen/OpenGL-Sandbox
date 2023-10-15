@@ -26,12 +26,9 @@ void SandboxLayer::OnAdd()
 	bool result = m_ShaderSystem->Compile();
 	GL_ASSERT(result != false, "Shader compilation failed.");
 
+
 	// 3D Cube
 	// =======
-
-	// Vertex Array Object
-	glCreateVertexArrays(1, &m_CubeVA);
-	glBindVertexArray(m_CubeVA);
 
 	float cube_vertices[24 * 3] = {
 		// positions(vec3)	       
@@ -95,6 +92,33 @@ void SandboxLayer::OnAdd()
 		22, 23, 20
 	};
 
+	// Batch of cubes
+	glm::mat4 modelMatrices[m_MatricesAmount];
+
+	float offsetX = 4.0f;
+	float offsetZ = 0.0f;
+
+	for (unsigned int i = 0; i < m_MatricesAmount; i++)
+	{
+		glm::mat4 model = glm::mat4(1.0f);
+
+		model = glm::translate(model, glm::vec3(offsetX, 0.0f, offsetZ));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+
+		offsetX -= 1.5f;
+
+		if ((i + 1) % 5 == 0) {
+			offsetX = 4.0f;
+			offsetZ -= 1.5f;
+		}
+
+		modelMatrices[i] = model;
+	}
+
+	// Vertex Array Object
+	glCreateVertexArrays(1, &m_CubeVA);
+	glBindVertexArray(m_CubeVA);
+
 	// Vertex Buffer
 	glCreateBuffers(1, &m_CubeVB);
 	glBindBuffer(GL_ARRAY_BUFFER, m_CubeVB);
@@ -105,10 +129,32 @@ void SandboxLayer::OnAdd()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_CubeIB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_indices), cube_indices, GL_STATIC_DRAW);
 
+	// Instanced Array Buffer
+	glCreateBuffers(1, &m_InstancedCubeVB);
+	glBindBuffer(GL_ARRAY_BUFFER, m_InstancedCubeVB);
+	glBufferData(GL_ARRAY_BUFFER, m_MatricesAmount * sizeof(glm::mat4), modelMatrices, GL_STATIC_DRAW);
+
 	// Attribute Index
+	glBindBuffer(GL_ARRAY_BUFFER, m_CubeVB);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // Arguments - (index, size, type, normalized, stride, offset)
 
+	glBindBuffer(GL_ARRAY_BUFFER, m_InstancedCubeVB);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 2));
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 3));
+
+	glVertexAttribDivisor(1, 1);
+	glVertexAttribDivisor(2, 1);
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+
+	glBindVertexArray(0);
 };
 
 
@@ -132,43 +178,36 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 	glUseProgram(m_ShaderSystem->GetProgramID());
 
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-	model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));		// it's a bit too big for our scene, so scale it down
-
-	int location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Model");
-	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(model));
+	int location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Projection");
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_CameraSystem->GetCamera()->GetProjectionMatrix()));
 
 	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_View");
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_CameraSystem->GetViewMatrix()));
 
-	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Projection");
-	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_CameraSystem->GetCamera()->GetProjectionMatrix()));
-
 	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Color");
 	glUniform4fv(location, 1, glm::value_ptr(glm::vec4(1.0f, 0.5f, 0.2f, 1.0f)));
 
+	//glm::mat4 model = glm::mat4(1.0f);
+	//model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+	//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));		// it's a bit too big for our scene, so scale it down
+
+	//location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Model");
+	//glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(model));
+
+	//glBindVertexArray(m_CubeVA);
+	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+
+	// --------------------------------------------------------------
+
+	// Batch Rendering
 	glBindVertexArray(m_CubeVA);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
-
-	// -------------------------------------
-
-	model = glm::translate(model, glm::vec3(4.0f, 0.0f, 0.0f));
-
-	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Model");
-	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(model));
-
-	location = glGetUniformLocation(m_ShaderSystem->GetProgramID(), "u_Color");
-	glUniform4fv(location, 1, glm::value_ptr(glm::vec4(1.0f, 0.5f, 0.5f, 1.0f)));
-
-	glBindVertexArray(m_CubeVA);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+	glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr, m_MatricesAmount);
 };
 
 
 void SandboxLayer::OnOverlayRender()
 {
-	ImGui::Begin("Testing Info"); 
+	ImGui::Begin("Testing Info");
 	ImGui::Text("Application (%.1f FPS)", ImGui::GetIO().Framerate);
 	ImGui::Text("Frametime %.3f ms ", 1000.0f / ImGui::GetIO().Framerate);
 	ImGui::End();

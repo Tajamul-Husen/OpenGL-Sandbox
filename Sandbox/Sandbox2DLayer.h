@@ -20,6 +20,8 @@ public:
 private:
 	unsigned int m_TrigVA, m_TrigVB, m_TrigIB;
 
+	static const unsigned int m_TrigAmount = 100;
+
 	ShaderSystem* m_ShaderSystem = nullptr;
 	CameraSystem* m_CameraSystem = nullptr;
 };

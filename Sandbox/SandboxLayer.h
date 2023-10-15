@@ -21,6 +21,9 @@ public:
 
 private:
 	unsigned int m_CubeVA, m_CubeVB, m_CubeIB;
+	unsigned int m_InstancedCubeVB;
+
+	static const unsigned int m_MatricesAmount = 15;
 
 	ShaderSystem* m_ShaderSystem = nullptr;
 	CameraSystem* m_CameraSystem = nullptr;
