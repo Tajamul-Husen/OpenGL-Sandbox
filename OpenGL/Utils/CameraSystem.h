@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "Camera.h"
 #include "../Core/Event.h"
@@ -19,14 +20,16 @@ namespace GL
 		void OnUpdate(float deltaTime);
 		void OnEvent(Event& event);
 
-		void SetOrthographicProjection();
-		void SetPerspectiveProjection();
-
 		Camera* GetCamera() { return m_Camera; };
 		const Camera* GetCamera() const { return m_Camera; };
-
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		glm::quat GetOrientation();
+		glm::vec3 GetCameraFrontDirection();
+		glm::vec3 GetCameraRightDirection();
+		glm::vec3 GetCameraUpDirection();
 
+		void SetOrthographicProjection();
+		void SetPerspectiveProjection();
 		void SetCameraPosition(const glm::vec3& position) { m_CameraPosition = position; CalculateViewMatrix(); };
 
 		void CalculateViewMatrix();

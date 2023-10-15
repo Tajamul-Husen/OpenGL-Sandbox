@@ -29,7 +29,7 @@ namespace GL
 				m_CameraPosition.y += velocity;
 			}
 			else {
-				m_CameraPosition += (m_CameraFrontDirection * velocity);
+				m_CameraPosition += (GetCameraFrontDirection() * velocity);
 			}
 		}
 
@@ -41,7 +41,7 @@ namespace GL
 			}
 			else
 			{
-				m_CameraPosition -= (m_CameraFrontDirection * velocity);
+				m_CameraPosition -= (GetCameraFrontDirection() * velocity);
 			}
 		}
 
@@ -52,7 +52,7 @@ namespace GL
 				m_CameraPosition.x -= velocity;
 			}
 			else {
-				m_CameraPosition -= (m_CameraRightDirection * velocity);
+				m_CameraPosition -= (GetCameraRightDirection() * velocity);
 			}
 		}
 
@@ -64,7 +64,23 @@ namespace GL
 			}
 			else
 			{
-				m_CameraPosition += (m_CameraRightDirection * velocity);
+				m_CameraPosition += (GetCameraRightDirection() * velocity);
+			}
+		}
+
+		if (Input::IsKeyPressed(Key::Up))
+		{
+			if (m_Camera->GetProjectionType() == ProjectionType::PERSPECTIVE)
+			{
+				m_CameraPosition += (GetCameraUpDirection() * velocity);
+			}
+		}
+
+		if (Input::IsKeyPressed(Key::Down))
+		{
+			if (m_Camera->GetProjectionType() == ProjectionType::PERSPECTIVE)
+			{
+				m_CameraPosition -= (GetCameraUpDirection() * velocity);
 			}
 		}
 
@@ -91,11 +107,7 @@ namespace GL
 
 		if (m_Camera->GetProjectionType() == ProjectionType::PERSPECTIVE)
 		{
-			glm::quat qPitch = glm::angleAxis(m_Pitch, glm::vec3(1, 0, 0));
-			glm::quat qYaw = glm::angleAxis(m_Yaw, glm::vec3(0, 1, 0));
-			glm::quat orientation = glm::normalize(qPitch * qYaw);
-
-			glm::mat4 rotate = glm::mat4_cast(orientation);
+			glm::mat4 rotate = glm::mat4_cast(GetOrientation());
 			glm::mat4 translate = glm::translate(glm::mat4(1.0f), m_CameraPosition);
 
 			m_ViewMatrix = glm::inverse(translate * rotate);
@@ -107,6 +119,32 @@ namespace GL
 			m_ViewMatrix = glm::inverse(translate * rotate);
 		}
 	};
+
+
+	glm::quat CameraSystem::GetOrientation()
+	{
+		glm::quat qPitch = glm::angleAxis(m_Pitch, glm::vec3(1, 0, 0));
+		glm::quat qYaw = glm::angleAxis(m_Yaw, glm::vec3(0, 1, 0));
+		return glm::normalize(m_Pitch * qYaw);
+	}
+
+
+	glm::vec3 CameraSystem::GetCameraFrontDirection()
+	{
+		return glm::rotate(GetOrientation(), m_CameraFrontDirection);
+	}
+
+
+	glm::vec3 CameraSystem::GetCameraRightDirection()
+	{
+		return glm::rotate(GetOrientation(), m_CameraRightDirection);
+	}
+
+
+	glm::vec3 CameraSystem::GetCameraUpDirection()
+	{
+		return glm::rotate(GetOrientation(), m_CameraUpDirection);
+	}
 
 
 	void CameraSystem::OnEvent(Event& event)
@@ -141,8 +179,8 @@ namespace GL
 		else {
 			float zoomLevel = m_Camera->GetOrthographicSize();
 
-			zoomLevel -= yOffset * 0.8f;
-			zoomLevel = std::max(zoomLevel, 0.8f);
+			zoomLevel -= yOffset * 0.25f;
+			zoomLevel = std::max(zoomLevel, 0.25f);
 
 			m_Camera->SetOrthographicSize(zoomLevel);
 		}
